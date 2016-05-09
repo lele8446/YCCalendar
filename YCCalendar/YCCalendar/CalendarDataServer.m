@@ -16,6 +16,11 @@
     return [components day];
 }
 
++ (NSInteger)weekOfYear:(NSDate *)date {
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitWeekOfYear) fromDate:date];
+    return [components weekOfYear];
+}
+
 + (NSInteger)month:(NSDate *)date {
     NSDateComponents *components = [[NSCalendar currentCalendar] components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay) fromDate:date];
     return [components month];
@@ -71,22 +76,31 @@
 }
 
 + (NSDate *)lastMonth:(NSDate *)date {
+//    NSDateComponents *lastDateComponents = [[NSDateComponents alloc] init];
+//    lastDateComponents.month = -1;
+//    NSDate *lastMonthDate = [[NSCalendar currentCalendar] dateByAddingComponents:lastDateComponents toDate:date options:0];
+    
     NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
-    dateComponents.month = -1;
+    [dateComponents setDay:(-[self day:date])];
     NSDate *newDate = [[NSCalendar currentCalendar] dateByAddingComponents:dateComponents toDate:date options:0];
     return newDate;
 }
 
 + (NSDate*)nextMonth:(NSDate *)date {
+//    NSDateComponents *lastDateComponents = [[NSDateComponents alloc] init];
+//    lastDateComponents.month = -1;
+//    NSDate *lastMonthDate = [[NSCalendar currentCalendar] dateByAddingComponents:lastDateComponents toDate:date options:0];
+    
     NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
-    dateComponents.month = +1;
+//    dateComponents.month = +1;
+    [dateComponents setDay:([self totaldaysInMonth:date] - [self day:date] +1)];
     NSDate *newDate = [[NSCalendar currentCalendar] dateByAddingComponents:dateComponents toDate:date options:0];
     return newDate;
 }
 
 + (NSDate *)lastWeek:(NSDate *)date {
     NSInteger weekday = [self dayInWeek:date];
-    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([date timeIntervalSinceReferenceDate] - (weekday+1)*24*3600)];
+    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([date timeIntervalSinceReferenceDate] - (weekday+7)*24*3600)];
     return newDate;
 }
 
@@ -152,11 +166,10 @@
                 selected = YES;
             }
         }else{
-            if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:todayDate]] &&
-                [[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:newdate]]) {
-                selected = YES;
+            if ([[format stringFromDate:newdate] isEqualToString:[format stringFromDate:todayDate]]) {
                 isToday = YES;
-            }else if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:newdate]]){
+            }
+            if ([[format stringFromDate:newdate] isEqualToString:[format stringFromDate:selectDate]]){
                 selected = YES;
             }
         }
@@ -246,31 +259,22 @@
             [dateArray addObject:calendarItem];
         }
     }
-    
-    __block BOOL haveToday = NO;
-    [dateArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
-        CalendarItemModel *item = (CalendarItemModel *)obj;
-        if ([[format stringFromDate:item.date] isEqualToString:[format stringFromDate:todayDate]]) {
-            haveToday = YES;
-        }
-    }];
-    
+        
     NSMutableArray *newDateArray = [NSMutableArray array];
     [dateArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
         CalendarItemModel *item = (CalendarItemModel *)obj;
         item.isThisMonth = ([self month:date] == [self month:item.date])?YES:NO;
         
-        //不是今天所在的星期
-        if (!haveToday) {
-            if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:item.date]]) {
+        //今天所在的星期
+        if ([self weekOfYear:item.date] == [self weekOfYear:todayDate]) {
+            if ([[format stringFromDate:item.date] isEqualToString:[format stringFromDate:todayDate]]) {
+                item.isToday = YES;
+            }
+            if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:item.date]]){
                 item.selected = YES;
             }
         }else{
-            if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:todayDate]] &&
-                [[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:item.date]]) {
-                item.selected = YES;
-                item.isToday = YES;
-            }else if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:item.date]]){
+            if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:item.date]]) {
                 item.selected = YES;
             }
         }

@@ -20,6 +20,15 @@
 + (NSInteger)day:(NSDate *)date;
 
 /**
+ *  该天所在周是一年中的第几周
+ *
+ *  @param date
+ *
+ *  @return 
+ */
++ (NSInteger)weekOfYear:(NSDate *)date;
+
+/**
  *  该天对应的月份
  *
  *  @param date
@@ -92,7 +101,7 @@
 + (NSDate*)nextMonth:(NSDate *)date;
 
 /**
- *  上一周周六日期
+ *  上一周周日日期
  *
  *  @param date
  *

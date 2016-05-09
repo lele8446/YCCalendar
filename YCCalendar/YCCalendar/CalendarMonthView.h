@@ -23,5 +23,5 @@ typedef void(^SelectCalendarDateBlock)(NSDate *date, BOOL isThisMonth);
  *
  *  @param date 
  */
-- (void)loadData:(NSDate *)date isExpand:(BOOL)isExpand;
+- (void)loadData:(NSDate *)date selectDate:(NSDate *)selectDate isExpand:(BOOL)isExpand;
 @end

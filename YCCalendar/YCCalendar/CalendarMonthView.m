@@ -47,8 +47,9 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 }
 
 
-- (void)loadData:(NSDate *)date isExpand:(BOOL)isExpand {
+- (void)loadData:(NSDate *)date selectDate:(NSDate *)selectDate isExpand:(BOOL)isExpand {
     self.date = date;
+    self.selectDate = selectDate;
     [self.dateArray removeAllObjects];
     if (isExpand) {
         [self.dateArray addObjectsFromArray:[CalendarDataServer handleMonthDate:date todayDate:[NSDate date] selectDate:self.selectDate]];
@@ -77,16 +78,19 @@ NSString *const YCCalendarCellIdentifier = @"cell";
     cell.textLabel.textColor = calendarItem.textcolor;
     cell.textLabel.backgroundColor = calendarItem.backcolor;
     cell.pointLabel.hidden = !calendarItem.haveData;
+    cell.textLabel.layer.borderColor = [UIColor clearColor].CGColor;
     if (calendarItem.isToday) {
         if (calendarItem.selected) {
             cell.textLabel.textColor = calendarItem.todaySelectTextcolor;
             cell.textLabel.backgroundColor = calendarItem.todayselectBackcolor;
             cell.textLabel.layer.cornerRadius = TextLabelHeight(cell)/2;
+            cell.textLabel.layer.borderWidth = 1;
         }else {
             cell.textLabel.textColor = calendarItem.textcolor;
             cell.textLabel.backgroundColor = calendarItem.backcolor;
             cell.textLabel.layer.cornerRadius = TextLabelHeight(cell)/2;
             cell.textLabel.layer.borderColor = calendarItem.todayBorderColor.CGColor;
+            cell.textLabel.layer.borderWidth = 1;
         }
     }else{
         if (calendarItem.selected) {
@@ -94,6 +98,7 @@ NSString *const YCCalendarCellIdentifier = @"cell";
             cell.textLabel.backgroundColor = calendarItem.backcolor;
             cell.textLabel.layer.cornerRadius = TextLabelHeight(cell)/2;
             cell.textLabel.layer.borderColor = calendarItem.selectBorderColor.CGColor;
+            cell.textLabel.layer.borderWidth = 1;
         }
     }
     

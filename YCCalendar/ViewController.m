@@ -40,7 +40,14 @@
     
     self.calendarView = [[YCCalendarView alloc]initWithFrame:CGRectMake(0, 0, ScreenWidth, 240*ScreenWidth/320.0)];
     self.calendarView.delegate = self;
-    [self.calendarView loadingInitialData:[NSDate date] selectDay:[NSDate date]];
+    
+    NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
+    [formatter setDateFormat:@"YYYY-MM-dd"];
+    NSString *selectDateStr = @"2016-04-08";
+    NSDate *selectDate = [formatter dateFromString:selectDateStr];
+    NSDate *date = [formatter dateFromString:@"2016-04-03"];
+    
+    [self.calendarView loadingInitialData:date selectDay:selectDate];
     [self.calendarView YCCalendarViewNarrowCompletion:^(void){
     }];
     
@@ -113,7 +120,7 @@
     
 //    NSInteger weekDay = [CalendarDataServer dayInWeek:date];
 //    NSLog(@"%@ 是星期 %@",timeString,@(weekDay));
-//    
+//
 //    NSDate *nextDate = [CalendarDataServer nextWeek:date];
 //    NSString *nextDateStr = [formatter stringFromDate:nextDate];
 //    
@@ -128,10 +135,31 @@
 //        NSLog(@"日期 %@",dateStr);
 //    }
     
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"选择日期" message:timeString preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
-    [alert addAction:cancel];
-    [self presentViewController:alert animated:YES completion:nil];
+//    NSLog(@"==============");
+//    NSString *DateStr = [formatter stringFromDate:date];
+//    NSLog(@"选择的是 %@",DateStr);
+//    
+//    NSDate *lastDate = [CalendarDataServer lastMonth:date];
+//    NSString *lastDateStr = [formatter stringFromDate:lastDate];
+//    NSLog(@"上个月最后一天是 %@",lastDateStr);
+//    NSDate *lastWeekDate = [CalendarDataServer lastWeek:date];
+//    NSString *lastWeekStr = [formatter stringFromDate:lastWeekDate];
+//    NSLog(@"上周第一天是 %@",lastWeekStr);
+//    
+//    NSDate *nextDate = [CalendarDataServer nextMonth:date];
+//    NSString *nextDateStr = [formatter stringFromDate:nextDate];
+//    NSLog(@"下个月第一天是 %@",nextDateStr);
+//    NSDate *nextWeekDate = [CalendarDataServer nextWeek:date];
+//    NSString *nextWeekStr = [formatter stringFromDate:nextWeekDate];
+//    NSLog(@"下周第一天是 %@",nextWeekStr);
+    
+    NSLog(@"这是第 %@ 周",@([CalendarDataServer weekOfYear:date]));
+
+    
+//    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"选择日期" message:timeString preferredStyle:UIAlertControllerStyleAlert];
+//    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
+//    [alert addAction:cancel];
+//    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (NSInteger)tableView:(__unused UITableView *)tableView numberOfRowsInSection:(__unused NSInteger)section

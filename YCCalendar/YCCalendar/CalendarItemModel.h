@@ -14,7 +14,7 @@
 #define DefaultBackColor       ([UIColor whiteColor])
 #define DefaultTodaySelectTextcolor ([UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0])
 #define DefaultTodatSelectBackcolor ([UIColor colorWithRed:0.083 green:0.4504 blue:0.9318 alpha:1.0])
-#define DefaultTodayBorderColor ([UIColor colorWithRed:0.083 green:0.4504 blue:0.9318 alpha:1.0])
+#define DefaultTodayBorderColor ([UIColor colorWithRed:0.8078 green:0.8078 blue:0.8078 alpha:1.0])
 
 @interface CalendarItemModel : NSObject
 @property (nonatomic, strong) NSDate *date;
