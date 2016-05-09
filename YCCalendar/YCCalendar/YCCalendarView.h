@@ -27,9 +27,8 @@
 @end
 
 @interface YCCalendarView : UIView
-
+@property (nonatomic, assign) BOOL isExpand;//是否展开
 @property (nonatomic, weak) id<YCCalendarViewDelegate> delegate;
-@property (nonatomic, copy) NSString *currentMonth;//当前月份id
 
 /**
  *  刷新数据
@@ -39,10 +38,10 @@
 /**
  *  加载初始数据
  *
- *  @param date  本月日期
- *  @param today 当前日期
+ *  @param date      初始化起始日期，一般与selectDay相同
+ *  @param selectDay 选定日期
  */
-- (void)loadingInitialData:(NSDate *)date today:(NSDate *)today;
+- (void)loadingInitialData:(NSDate *)date selectDay:(NSDate *)selectDay;
 
 /**
  *  上一月
@@ -59,4 +58,13 @@
  */
 - (void)scrollToToday;
 
+/**
+ *  向上收起
+ */
+- (void)YCCalendarViewNarrowCompletion:(void(^)(void))completion;
+
+/**
+ *  向下展开
+ */
+- (void)YCCalendarViewExpandCompletion:(void(^)(void))completion;
 @end

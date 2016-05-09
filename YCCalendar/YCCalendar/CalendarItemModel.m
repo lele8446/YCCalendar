@@ -13,20 +13,28 @@
 - (instancetype)initWithDate:(NSDate *)date
                    textColor:(UIColor *)textcolor
                    backColor:(UIColor *)backcolor
-             selectTextColor:(UIColor *)selectTextcolor
-             selectBackColor:(UIColor *)selectBackcolor
+        todaySelectTextcolor:(UIColor *)todaySelectTextcolor
+        todayselectBackcolor:(UIColor *)todayselectBackcolor
+           selectBorderColor:(UIColor *)selectBorderColor
+            todayBorderColor:(UIColor *)todayBorderColor
                     haveData:(BOOL)haveData
                     selected:(BOOL)selected
+                 isThisMonth:(BOOL)isThisMonth
+                     isToday:(BOOL)isToday
 {
     self = [super init];
     if (self) {
         self.date = date;
         self.textcolor = textcolor;
-        self.backcolor = backcolor?backcolor:[UIColor whiteColor];
-        self.selectTextcolor = selectTextcolor?selectTextcolor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
-        self.selectBackcolor = selectBackcolor?selectBackcolor:[UIColor colorWithRed:0.0381 green:0.4781 blue:0.9393 alpha:1.0];
+        self.backcolor = backcolor?backcolor:DefaultBackColor;
+        self.todaySelectTextcolor = todaySelectTextcolor?todaySelectTextcolor:DefaultTodaySelectTextcolor;
+        self.todayselectBackcolor = todayselectBackcolor?todayselectBackcolor:DefaultTodatSelectBackcolor;
+        self.selectBorderColor = selectBorderColor?selectBorderColor:DefaultTodatSelectBackcolor;
+        self.todayBorderColor = todayBorderColor?todayBorderColor:DefaultTodayBorderColor;
         self.haveData = haveData;
         self.selected = selected;
+        self.isThisMonth = isThisMonth;
+        self.isToday = isToday;
     }
     return self;
 }

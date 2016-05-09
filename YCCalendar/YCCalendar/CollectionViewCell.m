@@ -13,6 +13,7 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     self.textLabel.layer.masksToBounds = YES;
+//    self.textLabel.layer.borderColor
 //    self.textLabel.adjustsFontSizeToFitWidth = YES;
     
     self.pointLabel.layer.masksToBounds = YES;
