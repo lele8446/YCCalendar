@@ -21,9 +21,6 @@ typedef NS_ENUM(NSInteger, CalendarViewType) {
 typedef void(^SelectCalendarDateBlock)(NSDate *date, BOOL isThisMonth);
 
 @interface CalendarMonthView : UIView<UICollectionViewDelegate , UICollectionViewDataSource>
-@property (nonatomic, strong) NSDate *date;
-@property (nonatomic, strong) NSDate *selectDate;
-@property (nonatomic, strong) NSMutableArray *dateArray;
 @property (nonatomic, copy) SelectCalendarDateBlock selectDateBlock;
 
 /**

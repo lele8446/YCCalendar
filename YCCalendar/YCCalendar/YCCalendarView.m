@@ -9,9 +9,6 @@
 #import "YCCalendarView.h"
 #import "CalendarDataServer.h"
 
-#define ChangeViewFrameX(view, X) (view.frame = CGRectMake(X, view.frame.origin.y, view.frame.size.width, view.frame.size.height))
-#define ChangeViewFrameY(view, Y) (view.frame = CGRectMake(view.frame.origin.x, Y, view.frame.size.width, view.frame.size.height))
-
 @interface YCCalendarView()<UIScrollViewDelegate>
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, assign) BOOL isScrolling;//是否正在滑动
@@ -57,11 +54,6 @@
     [self customScrollView];
     [self customCalendarView];
     self.frameSize = self.frame.size;
-}
-
-- (void)setSelectDate:(NSDate *)selectDate {
-    _selectDate = selectDate;
-    self.curCalendarView.selectDate = selectDate;
 }
 
 #pragma mark - Private Method
@@ -162,7 +154,7 @@
 }
 
 #pragma mark - Public Method
-- (void)loadingInitialData:(NSDate *)date selectDay:(NSDate *)selectDay {
+- (void)loadingInitialDataSelectDay:(NSDate *)selectDay {
     
     //初次加载数据前，重绘UI，防止autolayout下frame值错误
     [self layoutIfNeeded];
@@ -200,14 +192,14 @@
     [self.scrollView setContentOffset:CGPointMake((viewSize-1) * CGRectGetWidth(self.scrollView.frame), 0) animated:YES];
 }
 
-- (void)scrollToLastDate {
+- (void)scrollToLastDay {
     NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] - 24*3600)];
     self.selectDate = newDate;
     [self handlePreAndNextDate];
     [self refreshData];
 }
 
-- (void)scrollToNextDate {
+- (void)scrollToNextDay {
     NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] + 24*3600)];
     self.selectDate = newDate;
     [self handlePreAndNextDate];

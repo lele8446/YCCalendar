@@ -16,6 +16,8 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 
 @interface CalendarMonthView ()
 @property (nonatomic, strong) UICollectionView *collectionView;
+@property (nonatomic, strong) NSMutableArray *dateArray;
+@property (nonatomic, assign) CalendarViewType viewType;
 
 @end
 
@@ -49,12 +51,12 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 
 
 - (void)loadDataSelectDate:(NSDate *)selectDate withType:(CalendarViewType)viewType {
-    self.selectDate = selectDate;
     [self.dateArray removeAllObjects];
+    self.viewType = viewType;
     if (viewType == CalendarMonth) {
-        [self.dateArray addObjectsFromArray:[CalendarDataServer handleMonthDateTodayDate:[NSDate date] selectDate:self.selectDate]];
+        [self.dateArray addObjectsFromArray:[CalendarDataServer handleMonthDateTodayDate:[NSDate date] selectDate:selectDate]];
     }else if (viewType == CalendarWeek) {
-        [self.dateArray addObjectsFromArray:[CalendarDataServer handleWeekDateTodayDate:[NSDate date] selectDate:self.selectDate]];
+        [self.dateArray addObjectsFromArray:[CalendarDataServer handleWeekDateTodayDate:[NSDate date] selectDate:selectDate]];
     }
     [_collectionView reloadData];
 }
@@ -121,13 +123,13 @@ NSString *const YCCalendarCellIdentifier = @"cell";
     }];
     
     CalendarItemModel *calendarItem = (CalendarItemModel *)self.dateArray[indexPath.row];
-//    if (calendarItem.isThisMonth) {
+    if ( (self.viewType == CalendarWeek) || (calendarItem.isThisMonth && (self.viewType == CalendarMonth))) {
         calendarItem.selected  = YES;
         [newDateArray replaceObjectAtIndex:indexPath.row withObject:calendarItem];
         [self.dateArray removeAllObjects];
         [self.dateArray addObjectsFromArray:newDateArray];
         [self.collectionView reloadData];
-//    }
+    }
     if (self.selectDateBlock) {
         self.selectDateBlock(calendarItem.date,calendarItem.isThisMonth);
     }

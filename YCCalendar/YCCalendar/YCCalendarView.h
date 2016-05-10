@@ -9,6 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "CalendarMonthView.h"
 
+#define ChangeViewFrameX(view, X) (view.frame = CGRectMake(X, view.frame.origin.y, view.frame.size.width, view.frame.size.height))
+#define ChangeViewFrameY(view, Y) (view.frame = CGRectMake(view.frame.origin.x, Y, view.frame.size.width, view.frame.size.height))
+#define ChangeViewFrameHeight(view, height) (view.frame = CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, height))
+#define ChangeViewFrameWidth(view, width) (view.frame = CGRectMake(view.frame.origin.x, view.frame.origin.y, width, view.frame.size.height))
+
 @class YCCalendarView;
 @protocol YCCalendarViewDelegate <NSObject>
 
@@ -44,10 +49,9 @@
 /**
  *  加载初始数据
  *
- *  @param date      初始化起始日期，一般与selectDay相同
  *  @param selectDay 选定日期
  */
-- (void)loadingInitialData:(NSDate *)date selectDay:(NSDate *)selectDay;
+- (void)loadingInitialDataSelectDay:(NSDate *)selectDay;
 
 /**
  *  上一页
@@ -62,12 +66,12 @@
 /**
  *  前一天
  */
-- (void)scrollToLastDate;
+- (void)scrollToLastDay;
 
 /**
  *  后一天
  */
-- (void)scrollToNextDate;
+- (void)scrollToNextDay;
 
 /**
  *  滑动到今天

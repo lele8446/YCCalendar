@@ -13,60 +13,33 @@
 
 #define ScreenWidth [[UIScreen mainScreen] bounds].size.width
 
-@interface ViewController ()<YCCalendarViewDelegate,UITableViewDelegate,UITableViewDataSource>
-@property (nonatomic, strong) IBOutlet YCCalendarView *calendarView;
-@property (nonatomic, strong) IBOutlet YCCalendarView *calendarView2;
+@interface ViewController ()<YCCalendarViewDelegate>
+@property (nonatomic, strong) YCCalendarView *calendarView;
 @property (nonatomic, weak) IBOutlet UILabel *label;
 @property (nonatomic, weak) IBOutlet UIView *topView;
-@property (nonatomic, weak) IBOutlet UITableView *tableView;
-
-@property (nonatomic, weak) IBOutlet NSLayoutConstraint *calendarViewTop;
-//@property (nonatomic, weak) IBOutlet NSLayoutConstraint *tableViewTop;
 
 @property (nonatomic, assign) CGFloat headViewHeight;
-@property (nonatomic, assign) BOOL headViewExpand;
+@property (nonatomic, assign) BOOL isExpaned;
+@property (nonatomic, strong) NSDate *selectDate;
 @end
 
 @implementation ViewController
 
 - (void)dealloc {
     self.calendarView.delegate = nil;
-    self.calendarView2.delegate = nil;
-    self.tableView.dataSource = nil;
-    self.tableView.delegate = nil;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self customTopView];
     
-    self.headViewHeight = (240*ScreenWidth/320.0)/6;
-    self.headViewExpand = NO;
+    self.isExpaned = YES;
     
-    self.calendarView = [[YCCalendarView alloc]initWithFrame:CGRectMake(0, 0, ScreenWidth, 240*ScreenWidth/320.0)];
+    self.calendarView = [[YCCalendarView alloc]initWithFrame:CGRectMake(0, 200, ScreenWidth, 240*ScreenWidth/320.0)];
     self.calendarView.delegate = self;
+    [self.calendarView loadingInitialDataSelectDay:[NSDate date]];
+    [self.view addSubview:self.calendarView];
     
-//    self.calendarView2 = [[YCCalendarView alloc]initWithFrame:CGRectMake(0, 150, ScreenWidth, self.headViewHeight)];
-//    self.calendarView2.delegate = self;
-//    self.calendarView2.viewType = CalendarWeek;
-//    self.calendarView2.hidden = NO;
-//    [self.view addSubview:self.calendarView2];
-    
-//    NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
-//    [formatter setDateFormat:@"YYYY-MM-dd"];
-//    NSString *selectDateStr = @"2016-05-10";
-//    NSDate *selectDate = [formatter dateFromString:selectDateStr];
-//    NSDate *date = [formatter dateFromString:@"2016-05-10"];
-    
-//    [self.calendarView loadingInitialData:date selectDay:selectDate];
-    [self.calendarView loadingInitialData:[NSDate date] selectDay:[NSDate date]];
-//    [self.calendarView YCCalendarViewNarrowCompletion:^(void){
-//    }];
-    
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
-    self.tableView.bounces = NO;
-    [self.tableView setTableHeaderView:self.calendarView];
 }
 
 - (void)customTopView {
@@ -113,158 +86,53 @@
 }
 
 - (IBAction)nextDate:(id)sender {
-    [self.calendarView scrollToNextDate];
+    [self.calendarView scrollToNextDay];
 }
 
 - (IBAction)lastDate:(id)sender {
-    [self.calendarView scrollToLastDate];
+    [self.calendarView scrollToLastDay];
 }
 
 - (IBAction)today:(id)sender {
     [self.calendarView scrollToToday];
 }
 
+- (IBAction)changeCalendarViewType {
+    self.isExpaned = !self.isExpaned;
+    [UIView animateWithDuration:0.3 animations:^(void){
+        
+    }];
+    
+    CATransition *animation = [CATransition animation];
+    [animation setDuration:0.5];
+    [animation setFillMode:kCAFillModeForwards];
+    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+    [animation setType:@"fade"];
+    [animation setSubtype:kCATransitionFromTop];
+    [self.calendarView.layer addAnimation:animation forKey:nil];
+    
+    if (self.isExpaned) {
+        ChangeViewFrameHeight(self.calendarView, 240*ScreenWidth/320.0);
+        self.calendarView.viewType = CalendarMonth;
+    }else{
+        ChangeViewFrameHeight(self.calendarView, (240*ScreenWidth/320.0)/6);
+        self.calendarView.viewType = CalendarWeek;
+    }
+    [self.calendarView loadingInitialDataSelectDay:self.selectDate];
+}
+
 #pragma mark - YCCalendarViewDelegate
 - (void)YCCalendarView:(YCCalendarView *)calendarView didEndScrollToDate:(NSDate *)date {
     if (calendarView == self.calendarView) {
         NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
-        [formatter setDateFormat:@"YYYY-MM"];
+        [formatter setDateFormat:@"YYYY-MM-dd"];
         NSString *timeString= [formatter stringFromDate:date];
         self.label.text = timeString;
-//        [self.calendarView2 loadingInitialData:date selectDay:date];
+        self.selectDate = date;
     }
 }
-
 
 - (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date {
-    
-    if (calendarView == self.calendarView) {
-//        [self.calendarView2 loadingInitialData:date selectDay:date];
-    }
-    
-    NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
-    [formatter setDateFormat:@"YYYY-MM-dd"];
-    NSString *timeString= [formatter stringFromDate:date];
-    
-//    NSInteger weekDay = [CalendarDataServer dayInWeek:date];
-//    NSLog(@"%@ 是星期 %@",timeString,@(weekDay));
-//
-//    NSDate *nextDate = [CalendarDataServer nextWeek:date];
-//    NSString *nextDateStr = [formatter stringFromDate:nextDate];
-//    
-//    NSDate *lastDate = [CalendarDataServer lastWeek:date];
-//    NSString *lastDateStr = [formatter stringFromDate:lastDate];
-//    NSLog(@"下星期第一天 %@",nextDateStr);
-//    NSLog(@"上星期最后一天 %@",lastDateStr);
-//    
-//    NSArray *ary = [CalendarDataServer handleWeekDate:date selectDate:[NSDate date]];
-//    for (CalendarItemModel *item in ary) {
-//        NSString *dateStr = [formatter stringFromDate:item.date];
-//        NSLog(@"日期 %@",dateStr);
-//    }
-    
-//    NSLog(@"==============");
-//    NSString *DateStr = [formatter stringFromDate:date];
-//    NSLog(@"选择的是 %@",DateStr);
-//    
-//    NSDate *lastDate = [CalendarDataServer lastMonth:date];
-//    NSString *lastDateStr = [formatter stringFromDate:lastDate];
-//    NSLog(@"上个月最后一天是 %@",lastDateStr);
-//    NSDate *lastWeekDate = [CalendarDataServer lastWeek:date];
-//    NSString *lastWeekStr = [formatter stringFromDate:lastWeekDate];
-//    NSLog(@"上周第一天是 %@",lastWeekStr);
-//    
-//    NSDate *nextDate = [CalendarDataServer nextMonth:date];
-//    NSString *nextDateStr = [formatter stringFromDate:nextDate];
-//    NSLog(@"下个月第一天是 %@",nextDateStr);
-//    NSDate *nextWeekDate = [CalendarDataServer nextWeek:date];
-//    NSString *nextWeekStr = [formatter stringFromDate:nextWeekDate];
-//    NSLog(@"下周第一天是 %@",nextWeekStr);
-    
-    NSLog(@"这是第 %@ 周",@([CalendarDataServer weekOfYear:date]));
-
-    
-//    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"选择日期" message:timeString preferredStyle:UIAlertControllerStyleAlert];
-//    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
-//    [alert addAction:cancel];
-//    [self presentViewController:alert animated:YES completion:nil];
-}
-
-- (NSInteger)tableView:(__unused UITableView *)tableView numberOfRowsInSection:(__unused NSInteger)section
-{
-    return 25;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(__unused NSIndexPath *)indexPath
-{
-    return 60;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString *TableSampleIdentifier = @"TableSampleIdentifier";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:TableSampleIdentifier];
-    if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:TableSampleIdentifier];
-    }
-    cell.contentView.backgroundColor = [UIColor colorWithRed:1.0 green:0.9479 blue:0.9931 alpha:1.0];
-    cell.textLabel.text = [NSString stringWithFormat:@"%@",@(indexPath.row)];
-    return cell;
-}
-
-//- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-//    return self.headViewHeight;
-//}
-//
-//- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section; {
-//    UIView *headView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, ScreenWidth, CGRectGetHeight(self.calendarView.frame) +4)];
-//    headView.backgroundColor = [UIColor colorWithRed:0.9373 green:0.9373 blue:0.9373 alpha:1.0];
-//    [headView addSubview:self.calendarView];
-//    return headView;
-//}
-
-static CGFloat kOldOffset = 0;
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
-{
-//    if (self.tableView.contentOffset.y == 0)
-////        if (self.tableView.contentOffset.y <= kOldOffset)
-//    {//展开
-//        self.headViewHeight = 240*ScreenWidth/320.0 + 4;
-//        self.headViewExpand = YES;
-//        [self.calendarView YCCalendarViewExpandCompletion:^(void){
-//            [self.tableView reloadData];
-//        }];
-//        
-//    }
-//    //收起
-//    if (scrollView.contentOffset.y > kOldOffset && self.headViewExpand) {
-//        self.headViewHeight = (240*ScreenWidth/320.0)/6 + 4;
-//        self.headViewExpand = NO;
-//        [self.calendarView YCCalendarViewNarrowCompletion:^(void){
-//            [self.tableView reloadData];
-//        }];
-//    }
-    
-    if (self.tableView.contentOffset.y <= kOldOffset)
-    {//展开
-        NSLog(@"向下滑了%f",self.tableView.contentOffset.y);
-//        if (self.tableView.contentOffset.y <= 0) {
-//            self.calendarViewTop.constant = 150+self.tableView.contentOffset.y;
-//        }
-//        if (self.tableView.contentOffset.y == 0 && self.tableView.tableHeaderView == nil) {
-//            [self.tableView setTableHeaderView:self.calendarView];
-//        }
-    }
-    //收起
-    if (scrollView.contentOffset.y > kOldOffset) {
-        NSLog(@"向上滑了%f",self.tableView.contentOffset.y);
-//        if (self.tableView.contentOffset.y <= 240*ScreenWidth/320.0) {
-//            self.calendarViewTop.constant = 150- self.tableView.contentOffset.y;
-//        }
-//        if (self.tableView.contentOffset.y >= 240*ScreenWidth/320.0 && self.tableView.tableHeaderView != nil) {
-//            [self.tableView setTableHeaderView:nil];
-//        }
-    }
-    
-    kOldOffset = scrollView.contentOffset.y;
+    self.selectDate = date;
 }
 @end
