@@ -21,6 +21,7 @@
 		B44020F11CD8A79000D8F8A5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B44020EF1CD8A79000D8F8A5 /* LaunchScreen.storyboard */; };
 		B44020FC1CD8A79000D8F8A5 /* YCCalendarTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B44020FB1CD8A79000D8F8A5 /* YCCalendarTests.m */; };
 		B44021071CD8A79000D8F8A5 /* YCCalendarUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = B44021061CD8A79000D8F8A5 /* YCCalendarUITests.m */; };
+		B4E28EB41CE1BEE90091C157 /* calender.gif in Resources */ = {isa = PBXBuildFile; fileRef = B4E28EB31CE1BEE90091C157 /* calender.gif */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +69,7 @@
 		B44021021CD8A79000D8F8A5 /* YCCalendarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YCCalendarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B44021061CD8A79000D8F8A5 /* YCCalendarUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YCCalendarUITests.m; sourceTree = "<group>"; };
 		B44021081CD8A79000D8F8A5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B4E28EB31CE1BEE90091C157 /* calender.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = calender.gif; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +137,7 @@
 		B44020E11CD8A79000D8F8A5 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				B4E28EB31CE1BEE90091C157 /* calender.gif */,
 				B44020E21CD8A79000D8F8A5 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -283,6 +286,7 @@
 				B44020F11CD8A79000D8F8A5 /* LaunchScreen.storyboard in Resources */,
 				B44020EE1CD8A79000D8F8A5 /* Assets.xcassets in Resources */,
 				B432C1D81CD9C0EB0029DBA4 /* CollectionViewCell.xib in Resources */,
+				B4E28EB41CE1BEE90091C157 /* calender.gif in Resources */,
 				B44020EC1CD8A79000D8F8A5 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
