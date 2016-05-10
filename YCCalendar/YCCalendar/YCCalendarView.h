@@ -7,7 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "CalendarMonthView.h"
 
+@class YCCalendarView;
 @protocol YCCalendarViewDelegate <NSObject>
 
 /**
@@ -15,19 +17,23 @@
  *
  *  @param date
  */
-- (void)YCCalendarViewdidEndScrollToDate:(NSDate *)date;
+- (void)YCCalendarView:(YCCalendarView *)calendarView didEndScrollToDate:(NSDate *)date;
 
 /**
  *  选择了某一日期
  *
  *  @param date
  */
-- (void)YCCalendarViewSelectCalendarDate:(NSDate *)date;
+- (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date;
 
 @end
 
+
 @interface YCCalendarView : UIView
-@property (nonatomic, assign) BOOL isExpand;//是否展开
+/**
+ *  日历样式，default CalendarMonth
+ */
+@property (nonatomic, assign) CalendarViewType viewType;
 @property (nonatomic, weak) id<YCCalendarViewDelegate> delegate;
 
 /**
@@ -44,27 +50,28 @@
 - (void)loadingInitialData:(NSDate *)date selectDay:(NSDate *)selectDay;
 
 /**
- *  上一月
+ *  上一页
  */
-- (void)scrollToLastMonth;
+- (void)scrollToLastPage;
 
 /**
- *  下一月
+ *  下一页
  */
-- (void)scrollToNextMonth;
+- (void)scrollToNextPage;
+
+/**
+ *  前一天
+ */
+- (void)scrollToLastDate;
+
+/**
+ *  后一天
+ */
+- (void)scrollToNextDate;
 
 /**
  *  滑动到今天
  */
 - (void)scrollToToday;
 
-/**
- *  向上收起
- */
-- (void)YCCalendarViewNarrowCompletion:(void(^)(void))completion;
-
-/**
- *  向下展开
- */
-- (void)YCCalendarViewExpandCompletion:(void(^)(void))completion;
 @end

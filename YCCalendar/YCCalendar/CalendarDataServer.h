@@ -24,7 +24,7 @@
  *
  *  @param date
  *
- *  @return 
+ *  @return
  */
 + (NSInteger)weekOfYear:(NSDate *)date;
 
@@ -127,7 +127,7 @@
  *
  *  @return
  */
-+ (NSArray *)handleMonthDate:(NSDate *)date todayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate;
++ (NSArray *)handleMonthDateTodayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate;
 
 /**
  *  根据指定日期，返回本周数据
@@ -138,6 +138,6 @@
  *
  *  @return
  */
-+ (NSArray *)handleWeekDate:(NSDate *)date todayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate;
++ (NSArray *)handleWeekDateTodayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate;
 
 @end

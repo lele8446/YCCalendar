@@ -7,7 +7,6 @@
 //
 
 #import "YCCalendarView.h"
-#import "CalendarMonthView.h"
 #import "CalendarDataServer.h"
 
 #define ChangeViewFrameX(view, X) (view.frame = CGRectMake(X, view.frame.origin.y, view.frame.size.width, view.frame.size.height))
@@ -23,7 +22,6 @@
 @property (nonatomic, strong) CalendarMonthView *curCalendarView;
 @property (nonatomic, strong) CalendarMonthView *nextCalendarView;
 
-@property (nonatomic, strong) NSDate *currentDate;
 @property (nonatomic, strong) NSDate *nextDate;
 @property (nonatomic, strong) NSDate *preDate;
 @property (nonatomic, strong) NSDate *selectDate;
@@ -71,7 +69,7 @@
     self.isScrolling = NO;
     self.hasPage = NO;
     self.isInitial = YES;
-    self.isExpand = YES;
+    self.viewType = CalendarMonth;
 }
 
 - (void)customScrollView {
@@ -106,13 +104,12 @@
                 __weak typeof(self) wSelf = self;
                 self.curCalendarView.selectDateBlock = ^(NSDate *date, BOOL isThisMonth){
                     wSelf.selectDate = date;
-                    wSelf.currentDate = date;
-                    if (!isThisMonth && self.isExpand) {
+                    if (!isThisMonth && self.viewType == CalendarMonth) {
                         //点击跳至上\下一月某一天
                         [wSelf scrollToDay:date isToday:NO];
                     }
-                    if (wSelf.delegate && [wSelf.delegate respondsToSelector:@selector(YCCalendarViewSelectCalendarDate:)]) {
-                        [wSelf.delegate YCCalendarViewSelectCalendarDate:date];
+                    if (wSelf.delegate && [wSelf.delegate respondsToSelector:@selector(YCCalendarView:selectCalendarDate:)]) {
+                        [wSelf.delegate YCCalendarView:wSelf selectCalendarDate:date];
                     }
                 };
             }
@@ -128,16 +125,11 @@
 
 - (void)changeCurDataToLast:(BOOL)toLast {
     if (toLast) {
-        self.currentDate = [self handleIncludeTodayDate:self.preDate];
-        self.selectDate = self.currentDate;
+        self.selectDate = [self handleIncludeTodayDate:self.preDate];
     }else{
-        self.currentDate = [self handleIncludeTodayDate:self.nextDate];
-        self.selectDate = self.currentDate;
+        self.selectDate = [self handleIncludeTodayDate:self.nextDate];
     }
-    self.preDate = self.isExpand?[CalendarDataServer lastMonth:self.currentDate]:[CalendarDataServer lastWeek:self.currentDate];
-    self.preDate = [self handleIncludeTodayDate:self.preDate];
-    self.nextDate = self.isExpand?[CalendarDataServer nextMonth:self.currentDate]:[CalendarDataServer nextWeek:self.currentDate];
-    self.nextDate = [self handleIncludeTodayDate:self.nextDate];
+    [self handlePreAndNextDate];
 }
 
 /**
@@ -150,40 +142,48 @@
 - (NSDate *)handleIncludeTodayDate:(NSDate *)date {
     NSDate *newDate = date;
     NSDate *today = [NSDate date];
-    if ([CalendarDataServer month:date] == [CalendarDataServer month:today] && self.isExpand) {
+    if ([CalendarDataServer month:date] == [CalendarDataServer month:today] && self.viewType == CalendarMonth) {
         newDate = today;
-    }else if ([CalendarDataServer weekOfYear:date] == [CalendarDataServer weekOfYear:today] && !self.isExpand) {
+    }else if ([CalendarDataServer weekOfYear:date] == [CalendarDataServer weekOfYear:today] && self.viewType == CalendarWeek) {
         newDate = today;
     }
     return newDate;
 }
 
+//计算上一页与下一页的date
+- (void)handlePreAndNextDate {
+    if (self.viewType == CalendarMonth) {
+        self.preDate = [self handleIncludeTodayDate:[CalendarDataServer lastMonth:self.selectDate]];
+        self.nextDate = [self handleIncludeTodayDate:[CalendarDataServer nextMonth:self.selectDate]];
+    }else if (self.viewType == CalendarWeek){
+        self.preDate = [self handleIncludeTodayDate:[CalendarDataServer lastWeek:self.selectDate]];
+        self.nextDate = [self handleIncludeTodayDate:[CalendarDataServer nextWeek:self.selectDate]];
+    }
+}
+
 #pragma mark - Public Method
 - (void)loadingInitialData:(NSDate *)date selectDay:(NSDate *)selectDay {
     
-    self.currentDate = date;
+    //初次加载数据前，重绘UI，防止autolayout下frame值错误
+    [self layoutIfNeeded];
     self.selectDate = selectDay;
-    self.preDate = self.isExpand?[CalendarDataServer lastMonth:self.currentDate]:[CalendarDataServer lastWeek:self.currentDate];
-    self.preDate = [self handleIncludeTodayDate:self.preDate];
-    self.nextDate = self.isExpand?[CalendarDataServer nextMonth:self.currentDate]:[CalendarDataServer nextWeek:self.currentDate];
-    self.nextDate = [self handleIncludeTodayDate:self.nextDate];
-    
+    [self handlePreAndNextDate];
     [self refreshData];
     
     self.isInitial = NO;
 }
 
 - (void)refreshData {
-    [self.curCalendarView loadData:self.currentDate selectDate:self.selectDate isExpand:self.isExpand];
-    [self.preCalendarView loadData:self.preDate selectDate:self.preDate isExpand:self.isExpand];
-    [self.nextCalendarView loadData:self.nextDate selectDate:self.nextDate isExpand:self.isExpand];
+    [self.curCalendarView loadDataSelectDate:self.selectDate withType:self.viewType];
+    [self.preCalendarView loadDataSelectDate:self.preDate withType:self.viewType];
+    [self.nextCalendarView loadDataSelectDate:self.nextDate withType:self.viewType];
     
-    if (self.delegate && [self.delegate respondsToSelector:@selector(YCCalendarViewdidEndScrollToDate:)]) {
-        [self.delegate YCCalendarViewdidEndScrollToDate:self.currentDate];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(YCCalendarView:didEndScrollToDate:)]) {
+        [self.delegate YCCalendarView:self didEndScrollToDate:self.selectDate];
     }
 }
 
-- (void)scrollToLastMonth {
+- (void)scrollToLastPage {
     if (self.isScrolling) {
         return;
     }
@@ -191,7 +191,7 @@
     [self.scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
 }
 
-- (void)scrollToNextMonth {
+- (void)scrollToNextPage {
     if (self.isScrolling) {
         return;
     }
@@ -200,19 +200,34 @@
     [self.scrollView setContentOffset:CGPointMake((viewSize-1) * CGRectGetWidth(self.scrollView.frame), 0) animated:YES];
 }
 
+- (void)scrollToLastDate {
+    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] - 24*3600)];
+    self.selectDate = newDate;
+    [self handlePreAndNextDate];
+    [self refreshData];
+}
+
+- (void)scrollToNextDate {
+    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] + 24*3600)];
+    self.selectDate = newDate;
+    [self handlePreAndNextDate];
+    [self refreshData];
+}
+
 //点击跳至今天
 - (void)scrollToToday {
     NSDate *today = [NSDate date];
+    NSDateFormatter *format = [[NSDateFormatter alloc]init];
+    [format setDateFormat:@"yyyy-MM-dd"];
+    if ([[format stringFromDate:self.selectDate] isEqualToString:[format stringFromDate:today]]) {
+        return;
+    }
     [self scrollToDay:today isToday:YES];
 }
 
 - (void)scrollToDay:(NSDate *)date isToday:(BOOL)isToday {
     self.selectDate = date;
-    self.currentDate = date;
-    self.preDate = self.isExpand?[CalendarDataServer lastMonth:self.currentDate]:[CalendarDataServer lastWeek:self.currentDate];
-    self.preDate = [self handleIncludeTodayDate:self.preDate];
-    self.nextDate = self.isExpand?[CalendarDataServer nextMonth:self.currentDate]:[CalendarDataServer nextWeek:self.currentDate];
-    self.nextDate = [self handleIncludeTodayDate:self.nextDate];
+    [self handlePreAndNextDate];
     
     if (isToday) {
         CATransition *animation = [CATransition animation];
@@ -228,77 +243,7 @@
     
 }
 
-- (void)YCCalendarViewNarrowCompletion:(void(^)(void))completion {
-    if (!self.isExpand) {
-        return;
-    }
-    self.isExpand = NO;
-    CATransition *animation = [CATransition animation];
-    [animation setDuration:0.8];
-    [animation setFillMode:kCAFillModeForwards];
-    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-    [animation setType:@"fade"];
-    [animation setSubtype:kCATransitionFromTop];
-    [self.layer addAnimation:animation forKey:nil];
-    
-    self.currentDate = self.selectDate;
-    self.preDate = self.isExpand?[CalendarDataServer lastMonth:self.currentDate]:[CalendarDataServer lastWeek:self.currentDate];
-    self.preDate = [self handleIncludeTodayDate:self.preDate];
-    self.nextDate = self.isExpand?[CalendarDataServer nextMonth:self.currentDate]:[CalendarDataServer nextWeek:self.currentDate];
-    self.nextDate = [self handleIncludeTodayDate:self.nextDate];
-    
-    [self.curCalendarView loadData:self.currentDate selectDate:self.selectDate isExpand:self.isExpand];
-    [self.preCalendarView loadData:self.preDate selectDate:self.preDate isExpand:self.isExpand];
-    [self.nextCalendarView loadData:self.nextDate selectDate:self.nextDate isExpand:self.isExpand];
-    
-    [UIView animateWithDuration:0.5
-                     animations:^(void){
-                         CGFloat oneRowHeight = self.frameSize.height / 6;
-                         self.frame = CGRectMake(0, 0, self.frameSize.width, oneRowHeight);
-                         completion();
-                     }completion:^(BOOL finished){
-                         if (self.delegate && [self.delegate respondsToSelector:@selector(YCCalendarViewdidEndScrollToDate:)]) {
-                             [self.delegate YCCalendarViewdidEndScrollToDate:self.currentDate];
-                         }
-                     }];
-}
-
-- (void)YCCalendarViewExpandCompletion:(void(^)(void))completion {
-    if (self.isExpand) {
-        return;
-    }
-    self.isExpand = YES;
-    CATransition *animation = [CATransition animation];
-    [animation setDuration:0.8];
-    [animation setFillMode:kCAFillModeForwards];
-    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-    [animation setType:@"fade"];
-    [animation setSubtype:kCATransitionFromTop];
-    [self.layer addAnimation:animation forKey:nil];
-    
-    self.currentDate = self.selectDate;
-    self.preDate = self.isExpand?[CalendarDataServer lastMonth:self.currentDate]:[CalendarDataServer lastWeek:self.currentDate];
-    self.preDate = [self handleIncludeTodayDate:self.preDate];
-    self.nextDate = self.isExpand?[CalendarDataServer nextMonth:self.currentDate]:[CalendarDataServer nextWeek:self.currentDate];
-    self.nextDate = [self handleIncludeTodayDate:self.nextDate];
-    
-    [self.curCalendarView loadData:self.currentDate selectDate:self.selectDate isExpand:self.isExpand];
-    [self.preCalendarView loadData:self.preDate selectDate:self.preDate isExpand:self.isExpand];
-    [self.nextCalendarView loadData:self.nextDate selectDate:self.nextDate isExpand:self.isExpand];
-    
-    [UIView animateWithDuration:0.5
-                     animations:^(void){
-                         self.frame = CGRectMake(0, 0, self.frameSize.width, self.frameSize.height);
-                     }completion:^(BOOL finished){
-                         completion();
-                         if (self.delegate && [self.delegate respondsToSelector:@selector(YCCalendarViewdidEndScrollToDate:)]) {
-                             [self.delegate YCCalendarViewdidEndScrollToDate:self.currentDate];
-                         }
-                     }];
-}
-
 #pragma mark - ObserverContentOffset && ObserverFrame
-
 static void *SelfViewFrameSetObservationContext = &SelfViewFrameSetObservationContext;
 - (void)addObserverForSelfViewFrame {
     [self.scrollView addObserver:self

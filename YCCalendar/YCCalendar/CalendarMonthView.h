@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+/**
+ *  日历的打开样式
+ */
+typedef NS_ENUM(NSInteger, CalendarViewType) {
+    CalendarMonth = 0,//以月为单位
+    CalendarWeek,     //以周为单位
+};
+
 #define ViewAutoresizingFlexibleAll UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin
 
 typedef void(^SelectCalendarDateBlock)(NSDate *date, BOOL isThisMonth);
@@ -21,7 +29,8 @@ typedef void(^SelectCalendarDateBlock)(NSDate *date, BOOL isThisMonth);
 /**
  *  刷新数据
  *
- *  @param date 
+ *  @param selectDate
+ *  @param viewType
  */
-- (void)loadData:(NSDate *)date selectDate:(NSDate *)selectDate isExpand:(BOOL)isExpand;
+- (void)loadDataSelectDate:(NSDate *)selectDate withType:(CalendarViewType)viewType;
 @end

@@ -76,10 +76,6 @@
 }
 
 + (NSDate *)lastMonth:(NSDate *)date {
-//    NSDateComponents *lastDateComponents = [[NSDateComponents alloc] init];
-//    lastDateComponents.month = -1;
-//    NSDate *lastMonthDate = [[NSCalendar currentCalendar] dateByAddingComponents:lastDateComponents toDate:date options:0];
-    
     NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
     [dateComponents setDay:(-[self day:date])];
     NSDate *newDate = [[NSCalendar currentCalendar] dateByAddingComponents:dateComponents toDate:date options:0];
@@ -87,12 +83,7 @@
 }
 
 + (NSDate*)nextMonth:(NSDate *)date {
-//    NSDateComponents *lastDateComponents = [[NSDateComponents alloc] init];
-//    lastDateComponents.month = -1;
-//    NSDate *lastMonthDate = [[NSCalendar currentCalendar] dateByAddingComponents:lastDateComponents toDate:date options:0];
-    
     NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
-//    dateComponents.month = +1;
     [dateComponents setDay:([self totaldaysInMonth:date] - [self day:date] +1)];
     NSDate *newDate = [[NSCalendar currentCalendar] dateByAddingComponents:dateComponents toDate:date options:0];
     return newDate;
@@ -110,13 +101,13 @@
     return newDate;
 }
 
-+ (NSArray *)handleMonthDate:(NSDate *)date todayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate {
++ (NSArray *)handleMonthDateTodayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate {
     NSMutableArray *dateArray = [NSMutableArray array];
     NSDateFormatter *format = [[NSDateFormatter alloc]init];
     //处理上一月数据
-    NSInteger firstWeekday = [self firstMonthdayInWeek:date];
+    NSInteger firstWeekday = [self firstMonthdayInWeek:selectDate];
     if (firstWeekday != 0) {//当前月的第一天不是星期日
-        NSDate *lastMonthDate = [self lastMonth:date];
+        NSDate *lastMonthDate = [self lastMonth:selectDate];
         NSInteger lastMonthDays = [self totaldaysInMonth:lastMonthDate];
         NSInteger lastMonthStartDays = lastMonthDays - (firstWeekday-1);
         
@@ -148,11 +139,11 @@
     }
     
     //当前月数据
-    NSInteger curMonthDays = [self totaldaysInMonth:date];
+    NSInteger curMonthDays = [self totaldaysInMonth:selectDate];
     [format setDateFormat:@"yyyy"];
-    NSString *curMonthYearStr = [format stringFromDate:date];
+    NSString *curMonthYearStr = [format stringFromDate:selectDate];
     [format setDateFormat:@"MM"];
-    NSString *curMonthStr = [format stringFromDate:date];
+    NSString *curMonthStr = [format stringFromDate:selectDate];
     for (NSInteger i = 1; i <= curMonthDays; i++) {
         NSString *curMonthDateStr = [NSString stringWithFormat:@"%@-%@-%ld",curMonthYearStr,curMonthStr,(long)i];
         [format setDateFormat:@"yyyy-MM-dd"];
@@ -161,7 +152,7 @@
         BOOL isToday = NO;
         
         //不是今天所在的月份
-        if ([self month:date] != [self month:todayDate]) {
+        if ([self month:selectDate] != [self month:todayDate]) {
             if ([[format stringFromDate:selectDate] isEqualToString:[format stringFromDate:newdate]]) {
                 selected = YES;
             }
@@ -191,7 +182,7 @@
     
     //处理下一月数据
     if (dateArray.count < 42) {//当前月的最后一天不是最后一个星期六
-        NSDate *nextMonthDate = [self nextMonth:date];
+        NSDate *nextMonthDate = [self nextMonth:selectDate];
         [format setDateFormat:@"yyyy"];
         NSString *nextMonthYearStr = [format stringFromDate:nextMonthDate];
         [format setDateFormat:@"MM"];
@@ -220,16 +211,16 @@
     return dateArray;
 }
 
-+ (NSArray *)handleWeekDate:(NSDate *)date todayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate {
++ (NSArray *)handleWeekDateTodayDate:(NSDate *)todayDate selectDate:(NSDate *)selectDate {
     NSMutableArray *dateArray = [NSMutableArray array];
     NSDateFormatter *format=[[NSDateFormatter alloc]init];
     [format setDateFormat:@"yyyy-MM-dd"];
     
-    NSInteger dayInWeek = [self dayInWeek:date];
+    NSInteger dayInWeek = [self dayInWeek:selectDate];
     //当天是星期日
     if (dayInWeek == 0) {
         for (NSInteger i = 0; i < 7; i++) {
-            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([date timeIntervalSinceReferenceDate] + i*24*3600)];
+            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([selectDate timeIntervalSinceReferenceDate] + i*24*3600)];
             CalendarItemModel *calendarItem =
             [[CalendarItemModel alloc] initWithDate:newDate textColor:ThisMonthTextColor backColor:nil todaySelectTextcolor:nil todayselectBackcolor:nil selectBorderColor:nil todayBorderColor:nil haveData:NO selected:NO isThisMonth:NO isToday:NO];
             [dateArray addObject:calendarItem];
@@ -238,7 +229,7 @@
     //当天是星期六
     else if (dayInWeek == 0) {
         for (NSInteger i = 7; i > 0; i--) {
-            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([date timeIntervalSinceReferenceDate] - i*24*3600)];
+            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([selectDate timeIntervalSinceReferenceDate] - i*24*3600)];
             CalendarItemModel *calendarItem =
             [[CalendarItemModel alloc] initWithDate:newDate textColor:ThisMonthTextColor backColor:nil todaySelectTextcolor:nil todayselectBackcolor:nil selectBorderColor:nil todayBorderColor:nil haveData:NO selected:NO isThisMonth:NO isToday:NO];
             [dateArray addObject:calendarItem];
@@ -246,14 +237,14 @@
     }else{
         //当天之前
         for (NSInteger i = dayInWeek; i > 0; i--) {
-            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([date timeIntervalSinceReferenceDate] - i*24*3600)];
+            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([selectDate timeIntervalSinceReferenceDate] - i*24*3600)];
             CalendarItemModel *calendarItem =
             [[CalendarItemModel alloc] initWithDate:newDate textColor:ThisMonthTextColor backColor:nil todaySelectTextcolor:nil todayselectBackcolor:nil selectBorderColor:nil todayBorderColor:nil haveData:NO selected:NO isThisMonth:NO isToday:NO];
             [dateArray addObject:calendarItem];
         }
         //当天之后（包含当天）
         for (NSInteger i = 0; i < 7 - dayInWeek; i++) {
-            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([date timeIntervalSinceReferenceDate] + i*24*3600)];
+            NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([selectDate timeIntervalSinceReferenceDate] + i*24*3600)];
             CalendarItemModel *calendarItem =
             [[CalendarItemModel alloc] initWithDate:newDate textColor:ThisMonthTextColor backColor:nil todaySelectTextcolor:nil todayselectBackcolor:nil selectBorderColor:nil todayBorderColor:nil haveData:NO selected:NO isThisMonth:NO isToday:NO];
             [dateArray addObject:calendarItem];
@@ -263,7 +254,7 @@
     NSMutableArray *newDateArray = [NSMutableArray array];
     [dateArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
         CalendarItemModel *item = (CalendarItemModel *)obj;
-        item.isThisMonth = ([self month:date] == [self month:item.date])?YES:NO;
+        item.isThisMonth = ([self month:selectDate] == [self month:item.date])?YES:NO;
         
         //今天所在的星期
         if ([self weekOfYear:item.date] == [self weekOfYear:todayDate]) {

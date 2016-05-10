@@ -10,6 +10,7 @@
 #import "CollectionViewCell.h"
 #import "CalendarItemModel.h"
 #import "CalendarDataServer.h"
+#import "YCCalendarView.h"
 
 NSString *const YCCalendarCellIdentifier = @"cell";
 
@@ -47,14 +48,13 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 }
 
 
-- (void)loadData:(NSDate *)date selectDate:(NSDate *)selectDate isExpand:(BOOL)isExpand {
-    self.date = date;
+- (void)loadDataSelectDate:(NSDate *)selectDate withType:(CalendarViewType)viewType {
     self.selectDate = selectDate;
     [self.dateArray removeAllObjects];
-    if (isExpand) {
-        [self.dateArray addObjectsFromArray:[CalendarDataServer handleMonthDate:date todayDate:[NSDate date] selectDate:self.selectDate]];
-    }else{
-        [self.dateArray addObjectsFromArray:[CalendarDataServer handleWeekDate:date todayDate:[NSDate date] selectDate:self.selectDate]];
+    if (viewType == CalendarMonth) {
+        [self.dateArray addObjectsFromArray:[CalendarDataServer handleMonthDateTodayDate:[NSDate date] selectDate:self.selectDate]];
+    }else if (viewType == CalendarWeek) {
+        [self.dateArray addObjectsFromArray:[CalendarDataServer handleWeekDateTodayDate:[NSDate date] selectDate:self.selectDate]];
     }
     [_collectionView reloadData];
 }
@@ -106,25 +106,8 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 }
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-//    NSInteger daysInThisMonth = [self totaldaysInMonth:_date];
-//    NSInteger firstWeekday = [self firstWeekdayInThisMonth:_date];
-//    
-//    NSInteger day = 0;
-//    NSInteger i = indexPath.row;
-//    
-//    if (i >= firstWeekday && i <= firstWeekday + daysInThisMonth - 1) {
-//        day = i - firstWeekday + 1;
-//        
-//        //this month
-//        if ([_today isEqualToDate:_date]) {
-//            if (day <= [self day:_date]) {
-//                return YES;
-//            }
-//        } else if ([_today compare:_date] == NSOrderedDescending) {
-//            return YES;
-//        }
-//    }
-//    return NO;
+
+    //TODO:点击判断
     return YES;
 }
 
