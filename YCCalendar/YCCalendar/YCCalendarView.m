@@ -96,13 +96,15 @@
                 __weak typeof(self) wSelf = self;
                 self.curCalendarView.selectDateBlock = ^(NSDate *date, BOOL isThisMonth){
                     wSelf.selectDate = date;
+                    //点击的不是本月数据，则滑动至上\下一月的那一天
                     if (!isThisMonth && self.viewType == CalendarMonth) {
-                        //点击跳至上\下一月某一天
                         [wSelf scrollToDay:date isToday:NO];
+                    }else{
+                        if (wSelf.delegate && [wSelf.delegate respondsToSelector:@selector(YCCalendarView:selectCalendarDate:selectDateRow:)]) {
+                            [wSelf.delegate YCCalendarView:wSelf selectCalendarDate:date selectDateRow:wSelf.curCalendarView.selectDateRow];
+                        }
                     }
-                    if (wSelf.delegate && [wSelf.delegate respondsToSelector:@selector(YCCalendarView:selectCalendarDate:)]) {
-                        [wSelf.delegate YCCalendarView:wSelf selectCalendarDate:date];
-                    }
+
                 };
             }
                 break;
@@ -153,70 +155,6 @@
     }
 }
 
-#pragma mark - Public Method
-- (void)loadingInitialDataSelectDay:(NSDate *)selectDay {
-    
-    //初次加载数据前，重绘UI，防止autolayout下frame值错误
-    [self layoutIfNeeded];
-    self.selectDate = selectDay;
-    [self handlePreAndNextDate];
-    [self refreshData];
-    
-    self.isInitial = NO;
-}
-
-- (void)refreshData {
-    [self.curCalendarView loadDataSelectDate:self.selectDate withType:self.viewType];
-    [self.preCalendarView loadDataSelectDate:self.preDate withType:self.viewType];
-    [self.nextCalendarView loadDataSelectDate:self.nextDate withType:self.viewType];
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(YCCalendarView:didEndScrollToDate:)]) {
-        [self.delegate YCCalendarView:self didEndScrollToDate:self.selectDate];
-    }
-}
-
-- (void)scrollToLastPage {
-    if (self.isScrolling) {
-        return;
-    }
-    self.isScrolling = YES;
-    [self.scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
-}
-
-- (void)scrollToNextPage {
-    if (self.isScrolling) {
-        return;
-    }
-    self.isScrolling = YES;
-    CGFloat viewSize = self.scrollView.contentSize.width/CGRectGetWidth(self.scrollView.frame);
-    [self.scrollView setContentOffset:CGPointMake((viewSize-1) * CGRectGetWidth(self.scrollView.frame), 0) animated:YES];
-}
-
-- (void)scrollToLastDay {
-    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] - 24*3600)];
-    self.selectDate = newDate;
-    [self handlePreAndNextDate];
-    [self refreshData];
-}
-
-- (void)scrollToNextDay {
-    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] + 24*3600)];
-    self.selectDate = newDate;
-    [self handlePreAndNextDate];
-    [self refreshData];
-}
-
-//点击跳至今天
-- (void)scrollToToday {
-    NSDate *today = [NSDate date];
-    NSDateFormatter *format = [[NSDateFormatter alloc]init];
-    [format setDateFormat:@"yyyy-MM-dd"];
-    if ([[format stringFromDate:self.selectDate] isEqualToString:[format stringFromDate:today]]) {
-        return;
-    }
-    [self scrollToDay:today isToday:YES];
-}
-
 - (void)scrollToDay:(NSDate *)date isToday:(BOOL)isToday {
     self.selectDate = date;
     [self handlePreAndNextDate];
@@ -230,9 +168,70 @@
         [animation setSubtype:kCATransitionFromTop];
         [self.curCalendarView.layer addAnimation:animation forKey:nil];
     }
+    [self YCCalendarViewRefreshData];
+}
+
+#pragma mark - Public Method
+- (void)YCCalendarViewRefreshData {
+    [self.curCalendarView loadDataSelectDate:self.selectDate withType:self.viewType];
+    [self.preCalendarView loadDataSelectDate:self.preDate withType:self.viewType];
+    [self.nextCalendarView loadDataSelectDate:self.nextDate withType:self.viewType];
     
-    [self refreshData];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(YCCalendarView:didEndScrollToDate:selectDateRow:)]) {
+        [self.delegate YCCalendarView:self didEndScrollToDate:self.selectDate selectDateRow:self.curCalendarView.selectDateRow];
+    }
+}
+
+- (void)YCCalendarViewLoadInitialDataWithSelectDay:(NSDate *)selectDay {
     
+    //初次加载数据前，重绘UI，防止autolayout下frame值错误
+    [self layoutIfNeeded];
+    self.selectDate = selectDay;
+    [self handlePreAndNextDate];
+    [self YCCalendarViewRefreshData];
+    
+    self.isInitial = NO;
+}
+
+- (void)YCCalendarViewScrollToLastPage {
+    if (self.isScrolling) {
+        return;
+    }
+    self.isScrolling = YES;
+    [self.scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+}
+
+- (void)YCCalendarViewScrollToNextPage {
+    if (self.isScrolling) {
+        return;
+    }
+    self.isScrolling = YES;
+    CGFloat viewSize = self.scrollView.contentSize.width/CGRectGetWidth(self.scrollView.frame);
+    [self.scrollView setContentOffset:CGPointMake((viewSize-1) * CGRectGetWidth(self.scrollView.frame), 0) animated:YES];
+}
+
+- (void)YCCalendarViewScrollToLastDay {
+    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] - 24*3600)];
+    self.selectDate = newDate;
+    [self handlePreAndNextDate];
+    [self YCCalendarViewRefreshData];
+}
+
+- (void)YCCalendarViewScrollToNextDay {
+    NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] + 24*3600)];
+    self.selectDate = newDate;
+    [self handlePreAndNextDate];
+    [self YCCalendarViewRefreshData];
+}
+
+- (void)YCCalendarViewScrollToToday {
+    NSDate *today = [NSDate date];
+    NSDateFormatter *format = [[NSDateFormatter alloc]init];
+    [format setDateFormat:@"yyyy-MM-dd"];
+    if ([[format stringFromDate:self.selectDate] isEqualToString:[format stringFromDate:today]]) {
+        return;
+    }
+    [self scrollToDay:today isToday:YES];
 }
 
 #pragma mark - ObserverContentOffset && ObserverFrame
@@ -282,7 +281,7 @@ static void *ScrollViewContentOffsetObservationContext = &ScrollViewContentOffse
             {
                 self.isScrolling = NO;
                 if (self.hasPage) {
-                    [self refreshData];
+                    [self YCCalendarViewRefreshData];
                 }
                 self.hasPage = NO;
             }else{

@@ -22,6 +22,7 @@ typedef void(^SelectCalendarDateBlock)(NSDate *date, BOOL isThisMonth);
 
 @interface CalendarMonthView : UIView<UICollectionViewDelegate , UICollectionViewDataSource>
 @property (nonatomic, copy) SelectCalendarDateBlock selectDateBlock;
+@property (nonatomic, assign) NSInteger selectDateRow;//选定日期是在第几行
 
 /**
  *  刷新数据

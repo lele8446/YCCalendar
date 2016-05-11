@@ -59,6 +59,17 @@ NSString *const YCCalendarCellIdentifier = @"cell";
         [self.dateArray addObjectsFromArray:[CalendarDataServer handleWeekDateTodayDate:[NSDate date] selectDate:selectDate]];
     }
     [_collectionView reloadData];
+    
+    for (int i = 0; i < self.dateArray.count; i++ ) {
+        CalendarItemModel *calendarItem = self.dateArray[i];
+        if (calendarItem.selected) {
+            if ((i+1)%7 == 0) {
+                self.selectDateRow = (i+1)/7;
+            }else{
+                self.selectDateRow = (i+1)/7 + 1;
+            }
+        }
+    }
 }
 
 #pragma -mark collectionView delegate
@@ -108,7 +119,7 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 }
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-
+    
     //TODO:点击判断
     return YES;
 }
@@ -129,6 +140,17 @@ NSString *const YCCalendarCellIdentifier = @"cell";
         [self.dateArray removeAllObjects];
         [self.dateArray addObjectsFromArray:newDateArray];
         [self.collectionView reloadData];
+        
+        for (int i = 0; i < self.dateArray.count; i++ ) {
+            CalendarItemModel *calendarItem = self.dateArray[i];
+            if (calendarItem.selected) {
+                if ((i+1)%7 == 0) {
+                    self.selectDateRow = (i+1)/7;
+                }else{
+                    self.selectDateRow = (i+1)/7 + 1;
+                }
+            }
+        }
     }
     if (self.selectDateBlock) {
         self.selectDateBlock(calendarItem.date,calendarItem.isThisMonth);

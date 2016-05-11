@@ -20,16 +20,20 @@
 /**
  *  已滑动至某一日期
  *
- *  @param date
+ *  @param calendarView
+ *  @param date         选中日期
+ *  @param row          选中日期在第几行
  */
-- (void)YCCalendarView:(YCCalendarView *)calendarView didEndScrollToDate:(NSDate *)date;
+- (void)YCCalendarView:(YCCalendarView *)calendarView didEndScrollToDate:(NSDate *)date selectDateRow:(NSInteger)row;
 
 /**
  *  选择了某一日期
  *
- *  @param date
+ *  @param calendarView
+ *  @param date         选中日期
+ *  @param row          选中日期在第几行
  */
-- (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date;
+- (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date selectDateRow:(NSInteger)row;
 
 @end
 
@@ -44,38 +48,37 @@
 /**
  *  刷新数据
  */
-- (void)refreshData;
+- (void)YCCalendarViewRefreshData;
 
 /**
  *  加载初始数据
- *
  *  @param selectDay 选定日期
  */
-- (void)loadingInitialDataSelectDay:(NSDate *)selectDay;
+- (void)YCCalendarViewLoadInitialDataWithSelectDay:(NSDate *)selectDay;
 
 /**
  *  上一页
  */
-- (void)scrollToLastPage;
+- (void)YCCalendarViewScrollToLastPage;
 
 /**
  *  下一页
  */
-- (void)scrollToNextPage;
+- (void)YCCalendarViewScrollToNextPage;
 
 /**
  *  前一天
  */
-- (void)scrollToLastDay;
+- (void)YCCalendarViewScrollToLastDay;
 
 /**
  *  后一天
  */
-- (void)scrollToNextDay;
+- (void)YCCalendarViewScrollToNextDay;
 
 /**
  *  滑动到今天
  */
-- (void)scrollToToday;
+- (void)YCCalendarViewScrollToToday;
 
 @end

@@ -37,7 +37,7 @@
     
     self.calendarView = [[YCCalendarView alloc]initWithFrame:CGRectMake(0, 200, ScreenWidth, 240*ScreenWidth/320.0)];
     self.calendarView.delegate = self;
-    [self.calendarView loadingInitialDataSelectDay:[NSDate date]];
+    [self.calendarView YCCalendarViewLoadInitialDataWithSelectDay:[NSDate date]];
     [self.view addSubview:self.calendarView];
     
 }
@@ -78,23 +78,23 @@
 }
 
 - (IBAction)nextMonth:(id)sender {
-    [self.calendarView scrollToNextPage];
+    [self.calendarView YCCalendarViewScrollToNextPage];
 }
 
 - (IBAction)lastMonth:(id)sender {
-    [self.calendarView scrollToLastPage];
+    [self.calendarView YCCalendarViewScrollToLastPage];
 }
 
 - (IBAction)nextDate:(id)sender {
-    [self.calendarView scrollToNextDay];
+    [self.calendarView YCCalendarViewScrollToNextDay];
 }
 
 - (IBAction)lastDate:(id)sender {
-    [self.calendarView scrollToLastDay];
+    [self.calendarView YCCalendarViewScrollToLastDay];
 }
 
 - (IBAction)today:(id)sender {
-    [self.calendarView scrollToToday];
+    [self.calendarView YCCalendarViewScrollToToday];
 }
 
 - (IBAction)changeCalendarViewType {
@@ -118,11 +118,11 @@
         ChangeViewFrameHeight(self.calendarView, (240*ScreenWidth/320.0)/6);
         self.calendarView.viewType = CalendarWeek;
     }
-    [self.calendarView loadingInitialDataSelectDay:self.selectDate];
+    [self.calendarView YCCalendarViewLoadInitialDataWithSelectDay:self.selectDate];
 }
 
 #pragma mark - YCCalendarViewDelegate
-- (void)YCCalendarView:(YCCalendarView *)calendarView didEndScrollToDate:(NSDate *)date {
+- (void)YCCalendarView:(YCCalendarView *)calendarView didEndScrollToDate:(NSDate *)date selectDateRow:(NSInteger)row {
     if (calendarView == self.calendarView) {
         NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
         [formatter setDateFormat:@"YYYY-MM-dd"];
@@ -132,7 +132,7 @@
     }
 }
 
-- (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date {
+- (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date selectDateRow:(NSInteger)row {
     self.selectDate = date;
 }
 @end
