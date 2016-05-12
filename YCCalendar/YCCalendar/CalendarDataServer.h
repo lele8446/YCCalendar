@@ -83,7 +83,7 @@
 + (NSInteger)totaldaysInMonth:(NSDate *)date;
 
 /**
- *  上一月对应日期
+ *  上一月最后一天日期
  *
  *  @param date
  *
@@ -92,7 +92,7 @@
 + (NSDate *)lastMonth:(NSDate *)date;
 
 /**
- *  下一月对应日期
+ *  下一月第一天日期
  *
  *  @param date
  *
