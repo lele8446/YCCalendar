@@ -46,11 +46,6 @@
 @property (nonatomic, weak) id<YCCalendarViewDelegate> delegate;
 
 /**
- *  刷新数据
- */
-- (void)YCCalendarViewRefreshData;
-
-/**
  *  加载初始数据
  *  @param selectDay 选定日期
  */

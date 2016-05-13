@@ -53,21 +53,7 @@
         label.font = [UIFont systemFontOfSize:12];
         label.textColor = (i == 0 || i == 6)?[UIColor colorWithRed:0.9922 green:0.5255 blue:0.0353 alpha:1.0]:[UIColor colorWithRed:0.5451 green:0.5451 blue:0.5451 alpha:1.0];
         label.textAlignment = NSTextAlignmentCenter;
-        if (i == 0) {
-            label.text = @"日";
-        }else if (i == 1){
-            label.text = @"一";
-        }else if (i == 2){
-            label.text = @"二";
-        }else if (i == 3){
-            label.text = @"三";
-        }else if (i == 4){
-            label.text = @"四";
-        }else if (i == 5){
-            label.text = @"五";
-        }else if (i == 6){
-            label.text = @"六";
-        }
+        label.text = i==0?@"日":i==1?@"一":i==2?@"二":i==3?@"三":i==4?@"四":i==5?@"五":@"六";
         [self.topView addSubview:label];
     }
 }
