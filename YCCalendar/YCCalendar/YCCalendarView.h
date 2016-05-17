@@ -14,6 +14,14 @@
 #define ChangeViewFrameHeight(view, height) (view.frame = CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, height))
 #define ChangeViewFrameWidth(view, width) (view.frame = CGRectMake(view.frame.origin.x, view.frame.origin.y, width, view.frame.size.height))
 
+
+/**
+ *  单周视图的高度，default 40
+ *
+ *  @return
+ */
+#define DefaultCalendarWeekViewHeight 40
+
 @class YCCalendarView;
 @protocol YCCalendarViewDelegate <NSObject>
 
@@ -35,15 +43,26 @@
  */
 - (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date selectDateRow:(NSInteger)row;
 
+@optional
+
+- (void)YCCalendarView:(YCCalendarView *)calendarView adjustFrameWithWeekNumber:(NSInteger)number;
+
 @end
 
 
-@interface YCCalendarView : UIView
+@interface YCCalendarView : UIScrollView
+@property (nonatomic, weak) id<YCCalendarViewDelegate> calendarViewDelegate;
+
 /**
  *  日历样式，default CalendarMonth
  */
 @property (nonatomic, assign) CalendarViewType viewType;
-@property (nonatomic, weak) id<YCCalendarViewDelegate> delegate;
+
+/**
+ *  是否根据不同月份数据自动调整高度，值为NO时需设定frame值高度 = 6 * DefaultCalendarWeekViewHeight,
+ *  default NO
+ */
+@property (nonatomic, assign) BOOL heightAdjust;
 
 /**
  *  加载初始数据

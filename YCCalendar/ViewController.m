@@ -35,8 +35,9 @@
     
     self.isExpaned = YES;
     
-    self.calendarView = [[YCCalendarView alloc]initWithFrame:CGRectMake(0, 200, ScreenWidth, 240*ScreenWidth/320.0)];
-    self.calendarView.delegate = self;
+    self.calendarView = [[YCCalendarView alloc]initWithFrame:CGRectMake(0, 200, ScreenWidth, DefaultCalendarWeekViewHeight*6)];
+    self.calendarView.calendarViewDelegate = self;
+    self.calendarView.heightAdjust = YES;
     [self.calendarView YCCalendarViewLoadInitialDataWithSelectDay:[NSDate date]];
     [self.view addSubview:self.calendarView];
     
@@ -98,13 +99,14 @@
     [self.calendarView.layer addAnimation:animation forKey:nil];
     
     if (self.isExpaned) {
-        ChangeViewFrameHeight(self.calendarView, 240*ScreenWidth/320.0);
         self.calendarView.viewType = CalendarMonth;
+        ChangeViewFrameHeight(self.calendarView, 6 * DefaultCalendarWeekViewHeight);
+        [self.calendarView YCCalendarViewLoadInitialDataWithSelectDay:self.selectDate];
     }else{
-        ChangeViewFrameHeight(self.calendarView, (240*ScreenWidth/320.0)/6);
         self.calendarView.viewType = CalendarWeek;
+        ChangeViewFrameHeight(self.calendarView, DefaultCalendarWeekViewHeight);
+        [self.calendarView YCCalendarViewLoadInitialDataWithSelectDay:self.selectDate];
     }
-    [self.calendarView YCCalendarViewLoadInitialDataWithSelectDay:self.selectDate];
 }
 
 #pragma mark - YCCalendarViewDelegate
@@ -119,6 +121,16 @@
 }
 
 - (void)YCCalendarView:(YCCalendarView *)calendarView selectCalendarDate:(NSDate *)date selectDateRow:(NSInteger)row {
-    self.selectDate = date;
+    if (calendarView == self.calendarView) {
+        NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
+        [formatter setDateFormat:@"YYYY-MM-dd"];
+        NSString *timeString= [formatter stringFromDate:date];
+        self.label.text = timeString;
+        self.selectDate = date;
+    }
+}
+
+- (void)YCCalendarView:(YCCalendarView *)calendarView adjustFrameWithWeekNumber:(NSInteger)number {
+    NSLog(@"高度变为 %@ 行",@(number));
 }
 @end

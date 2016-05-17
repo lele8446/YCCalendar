@@ -181,14 +181,15 @@
     }
     
     //处理下一月数据
-    if (dateArray.count < 42) {//当前月的最后一天不是最后一个星期六
+    //当前月的最后一天不是星期六
+    if (dateArray.count%7 != 0) {
         NSDate *nextMonthDate = [self nextMonth:selectDate];
         [format setDateFormat:@"yyyy"];
         NSString *nextMonthYearStr = [format stringFromDate:nextMonthDate];
         [format setDateFormat:@"MM"];
         NSString *nextMonthStr = [format stringFromDate:nextMonthDate];
         
-        NSInteger nextMonthEndDays = 42 - dateArray.count;
+        NSInteger nextMonthEndDays = (dateArray.count/7+1)*7 - dateArray.count;
         for (NSInteger i = 1; i <= nextMonthEndDays; i++) {
             NSString *nextMonthDateStr = [NSString stringWithFormat:@"%@-%@-%ld",nextMonthYearStr,nextMonthStr,(long)i];
             [format setDateFormat:@"yyyy-MM-dd"];

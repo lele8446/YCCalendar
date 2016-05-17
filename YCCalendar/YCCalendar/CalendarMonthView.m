@@ -18,6 +18,7 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 @property (nonatomic, strong) UICollectionView *collectionView;
 @property (nonatomic, strong) NSMutableArray *dateArray;
 @property (nonatomic, assign) CalendarViewType viewType;
+@property (nonatomic, assign) NSInteger weekNum;
 
 @end
 
@@ -45,20 +46,36 @@ NSString *const YCCalendarCellIdentifier = @"cell";
         [self addSubview:self.collectionView];
         
         self.dateArray = [NSMutableArray array];
+        self.weekNum = -1;
     }
     return self;
 }
 
 
-- (void)loadDataSelectDate:(NSDate *)selectDate withType:(CalendarViewType)viewType {
-    [self.dateArray removeAllObjects];
+- (void)loadDataSelectDate:(NSDate *)selectDate withType:(CalendarViewType)viewType heightAdjust:(BOOL)heightAdjust {
+    self.heightAdjust = heightAdjust;
     self.viewType = viewType;
+    [self.dateArray removeAllObjects];
+    [self.collectionView reloadData];
+    
     if (viewType == CalendarMonth) {
         [self.dateArray addObjectsFromArray:[CalendarDataServer handleMonthDateTodayDate:[NSDate date] selectDate:selectDate]];
     }else if (viewType == CalendarWeek) {
         [self.dateArray addObjectsFromArray:[CalendarDataServer handleWeekDateTodayDate:[NSDate date] selectDate:selectDate]];
     }
-    [_collectionView reloadData];
+    if (self.heightAdjust) {
+        if (self.weekNum == self.dateArray.count/7) {
+            return;
+        }
+        self.weekNum = self.dateArray.count/7;
+        ChangeViewFrameHeight(self, (self.weekNum) * DefaultCalendarWeekViewHeight);
+        //改变父视图的frame值
+        if (self.changeFrameBlock) {
+            self.changeFrameBlock(self.weekNum);
+        }
+    }
+    
+    [self.collectionView reloadData];
     
     for (int i = 0; i < self.dateArray.count; i++ ) {
         CalendarItemModel *calendarItem = self.dateArray[i];
@@ -92,6 +109,7 @@ NSString *const YCCalendarCellIdentifier = @"cell";
     cell.textLabel.backgroundColor = calendarItem.backcolor;
     cell.pointLabel.hidden = !calendarItem.haveData;
     cell.textLabel.layer.borderColor = [UIColor clearColor].CGColor;
+    cell.textLabel.layer.cornerRadius = 0;
     if (calendarItem.isToday) {
         if (calendarItem.selected) {
             cell.textLabel.textColor = calendarItem.todaySelectTextcolor;
@@ -158,7 +176,16 @@ NSString *const YCCalendarCellIdentifier = @"cell";
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(self.collectionView.frame.size.width / 7, self.dateArray.count>7?self.collectionView.frame.size.height/6:self.collectionView.frame.size.height);
+    CGFloat height = self.bounds.size.height;
+    if (self.heightAdjust) {
+        if (self.viewType == CalendarMonth) {
+            height = height/(self.dateArray.count/7);
+        }
+        return CGSizeMake(self.collectionView.frame.size.width / 7, height);
+    }else{
+        return CGSizeMake(self.collectionView.frame.size.width / 7, self.dateArray.count>7?height/6:height);
+    }
+    
 }
 
 //定义每个UICollectionView 的 margin

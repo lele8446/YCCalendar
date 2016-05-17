@@ -10,7 +10,6 @@
 #import "CalendarDataServer.h"
 
 @interface YCCalendarView()<UIScrollViewDelegate>
-@property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, assign) BOOL isScrolling;//是否正在滑动
 @property (nonatomic, assign) BOOL isInitial;//是否初始化
 @property (nonatomic, assign) BOOL hasPage;//是否已翻页
@@ -23,17 +22,15 @@
 @property (nonatomic, strong) NSDate *preDate;
 @property (nonatomic, strong) NSDate *selectDate;
 
-@property (nonatomic, assign) CGSize frameSize;
-
 @end
 
 @implementation YCCalendarView
 
 #pragma mark - life cycle
 - (void)dealloc {
-    self.scrollView.delegate = nil;
-    [self.scrollView removeObserver:self forKeyPath:@"contentOffset"];
-    [self.scrollView removeObserver:self forKeyPath:@"frame"];
+    self.calendarViewDelegate = nil;
+    [self removeObserver:self forKeyPath:@"contentOffset"];
+    [self removeObserver:self forKeyPath:@"frame"];
     self.delegate = nil;
 }
 
@@ -43,7 +40,6 @@
         [self customInitialValue];
         [self customScrollView];
         [self customCalendarView];
-        self.frameSize = frame.size;
     }
     return self;
 }
@@ -53,7 +49,19 @@
     [self customInitialValue];
     [self customScrollView];
     [self customCalendarView];
-    self.frameSize = self.frame.size;
+}
+
+- (void)setHeightAdjust:(BOOL)heightAdjust {
+    _heightAdjust = heightAdjust;
+    if (heightAdjust) {
+        self.preCalendarView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleRightMargin;
+        self.curCalendarView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleRightMargin;
+        self.nextCalendarView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleRightMargin;
+    }else{
+        self.preCalendarView.autoresizingMask = ViewAutoresizingFlexibleAll;
+        self.curCalendarView.autoresizingMask = ViewAutoresizingFlexibleAll;
+        self.nextCalendarView.autoresizingMask = ViewAutoresizingFlexibleAll;
+    }
 }
 
 #pragma mark - Private Method
@@ -62,54 +70,58 @@
     self.hasPage = NO;
     self.isInitial = YES;
     self.viewType = CalendarMonth;
+    self.heightAdjust = NO;
 }
 
 - (void)customScrollView {
-    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height)];
-    self.scrollView.showsHorizontalScrollIndicator = NO;
-    self.scrollView.contentSize = CGSizeMake(self.bounds.size.width * 3, 0);
-    self.scrollView.pagingEnabled = YES;
-    self.scrollView.bounces = NO;
-    self.scrollView.delegate = self;
-    self.scrollView.autoresizingMask = ViewAutoresizingFlexibleAll;
-    self.scrollView.backgroundColor = [UIColor whiteColor];
-    self.scrollView.scrollsToTop = NO;
-    [self.scrollView setContentOffset:CGPointMake(self.bounds.size.width, 0) animated:NO];
-    [self addSubview:self.scrollView];
-    [self bringSubviewToFront:self.scrollView];
+    self.showsHorizontalScrollIndicator = NO;
+    self.contentSize = CGSizeMake(self.bounds.size.width * 3, 0);
+    self.pagingEnabled = YES;
+    self.bounces = NO;
+    self.delegate = self;
+    self.backgroundColor = [UIColor whiteColor];
+    self.scrollsToTop = NO;
+    [self setContentOffset:CGPointMake(self.bounds.size.width, 0) animated:NO];
     [self addObserverForScrollViewContentOffset];
     [self addObserverForSelfViewFrame];
 }
 
 - (void)customCalendarView {
     for (int i = 0; i < 3; i++) {
-        CalendarMonthView *calendarView = [[CalendarMonthView alloc]initWithFrame:CGRectMake(i * self.scrollView.frame.size.width, 0, CGRectGetWidth(self.scrollView.frame), CGRectGetHeight(self.scrollView.frame))];
-        calendarView.autoresizingMask = ViewAutoresizingFlexibleAll;
-        [self.scrollView addSubview:calendarView];
+        CalendarMonthView *calendarView = [[CalendarMonthView alloc]initWithFrame:CGRectMake(i * self.frame.size.width, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))];
+        if (self.heightAdjust) {
+            calendarView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleRightMargin;
+        }else{
+            calendarView.autoresizingMask = ViewAutoresizingFlexibleAll;
+        }
+        [self addSubview:calendarView];
+        __weak typeof(self) wSelf = self;
         switch (i) {
             case 0:
+            {
                 self.preCalendarView = calendarView;
+            }
                 break;
             case 1:
             {
                 self.curCalendarView = calendarView;
-                __weak typeof(self) wSelf = self;
                 self.curCalendarView.selectDateBlock = ^(NSDate *date, BOOL isThisMonth){
                     wSelf.selectDate = date;
                     //点击的不是本月数据，则滑动至上\下一月的那一天
                     if (!isThisMonth && self.viewType == CalendarMonth) {
                         [wSelf scrollToDay:date isToday:NO];
                     }else{
-                        if (wSelf.delegate && [wSelf.delegate respondsToSelector:@selector(YCCalendarView:selectCalendarDate:selectDateRow:)]) {
-                            [wSelf.delegate YCCalendarView:wSelf selectCalendarDate:date selectDateRow:wSelf.curCalendarView.selectDateRow];
+                        if (wSelf.calendarViewDelegate && [wSelf.calendarViewDelegate respondsToSelector:@selector(YCCalendarView:selectCalendarDate:selectDateRow:)]) {
+                            [wSelf.calendarViewDelegate YCCalendarView:wSelf selectCalendarDate:date selectDateRow:wSelf.curCalendarView.selectDateRow];
                         }
                     }
-
                 };
             }
                 break;
             case 2:
+            {
                 self.nextCalendarView = calendarView;
+            }
                 break;
             default:
                 break;
@@ -136,10 +148,12 @@
 - (NSDate *)handleIncludeTodayDate:(NSDate *)date {
     NSDate *newDate = date;
     NSDate *today = [NSDate date];
-    if ([CalendarDataServer month:date] == [CalendarDataServer month:today] && self.viewType == CalendarMonth) {
-        newDate = today;
-    }else if ([CalendarDataServer weekOfYear:date] == [CalendarDataServer weekOfYear:today] && self.viewType == CalendarWeek) {
-        newDate = today;
+    if ([CalendarDataServer year:date] == [CalendarDataServer year:today]) {
+        if ([CalendarDataServer month:date] == [CalendarDataServer month:today] && self.viewType == CalendarMonth) {
+            newDate = today;
+        }else if ([CalendarDataServer weekOfYear:date] == [CalendarDataServer weekOfYear:today] && self.viewType == CalendarWeek) {
+            newDate = today;
+        }
     }
     return newDate;
 }
@@ -168,27 +182,50 @@
         [animation setSubtype:kCATransitionFromTop];
         [self.curCalendarView.layer addAnimation:animation forKey:nil];
     }
-    [self YCCalendarViewRefreshData];
+    [self YCCalendarViewRefreshDataHeightAdjust:self.heightAdjust];
 }
 
-#pragma mark - Public Method
-- (void)YCCalendarViewRefreshData {
-    [self.curCalendarView loadDataSelectDate:self.selectDate withType:self.viewType];
-    [self.preCalendarView loadDataSelectDate:self.preDate withType:self.viewType];
-    [self.nextCalendarView loadDataSelectDate:self.nextDate withType:self.viewType];
+- (void)YCCalendarViewRefreshDataHeightAdjust:(BOOL)heightAdjust {
+    __weak typeof(self) wSelf = self;
+    self.curCalendarView.changeFrameBlock = ^(NSInteger weekNum){
+        if (heightAdjust) {
+            if (wSelf.isInitial) {
+                ChangeViewFrameHeight(wSelf, weekNum * DefaultCalendarWeekViewHeight);
+                [wSelf layoutIfNeeded];
+            }else{
+                if (wSelf.calendarViewDelegate && [wSelf.calendarViewDelegate respondsToSelector:@selector(YCCalendarView:adjustFrameWithWeekNumber:)]) {
+                    [UIView performWithoutAnimation:^{
+                    }];
+                    [UIView animateWithDuration:0.25f delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^(){
+                        ChangeViewFrameHeight(wSelf, weekNum * DefaultCalendarWeekViewHeight);
+                        [wSelf layoutIfNeeded];
+                    } completion:^(BOOL finished){
+                        
+                    }];
+                    
+                    [wSelf.calendarViewDelegate YCCalendarView:wSelf adjustFrameWithWeekNumber:weekNum];
+                }
+            }
+        }
+    };
     
-    if (self.delegate && [self.delegate respondsToSelector:@selector(YCCalendarView:didEndScrollToDate:selectDateRow:)]) {
-        [self.delegate YCCalendarView:self didEndScrollToDate:self.selectDate selectDateRow:self.curCalendarView.selectDateRow];
+    [self.curCalendarView loadDataSelectDate:self.selectDate withType:self.viewType heightAdjust:heightAdjust];
+    [self.preCalendarView loadDataSelectDate:self.preDate withType:self.viewType heightAdjust:heightAdjust];
+    [self.nextCalendarView loadDataSelectDate:self.nextDate withType:self.viewType heightAdjust:heightAdjust];
+    
+    if (self.calendarViewDelegate && [self.calendarViewDelegate respondsToSelector:@selector(YCCalendarView:didEndScrollToDate:selectDateRow:)]) {
+        [self.calendarViewDelegate YCCalendarView:self didEndScrollToDate:self.selectDate selectDateRow:self.curCalendarView.selectDateRow];
     }
 }
 
+#pragma mark - Public Method
 - (void)YCCalendarViewLoadInitialDataWithSelectDay:(NSDate *)selectDay {
     
     //初次加载数据前，重绘UI，防止autolayout下frame值错误
     [self layoutIfNeeded];
     self.selectDate = selectDay;
     [self handlePreAndNextDate];
-    [self YCCalendarViewRefreshData];
+    [self YCCalendarViewRefreshDataHeightAdjust:self.heightAdjust];
     
     self.isInitial = NO;
 }
@@ -198,7 +235,7 @@
         return;
     }
     self.isScrolling = YES;
-    [self.scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+    [self setContentOffset:CGPointMake(0, 0) animated:YES];
 }
 
 - (void)YCCalendarViewScrollToNextPage {
@@ -206,22 +243,22 @@
         return;
     }
     self.isScrolling = YES;
-    CGFloat viewSize = self.scrollView.contentSize.width/CGRectGetWidth(self.scrollView.frame);
-    [self.scrollView setContentOffset:CGPointMake((viewSize-1) * CGRectGetWidth(self.scrollView.frame), 0) animated:YES];
+    CGFloat viewSize = self.contentSize.width/CGRectGetWidth(self.frame);
+    [self setContentOffset:CGPointMake((viewSize-1) * CGRectGetWidth(self.frame), 0) animated:YES];
 }
 
 - (void)YCCalendarViewScrollToLastDay {
     NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] - 24*3600)];
     self.selectDate = newDate;
     [self handlePreAndNextDate];
-    [self YCCalendarViewRefreshData];
+    [self YCCalendarViewRefreshDataHeightAdjust:self.heightAdjust];
 }
 
 - (void)YCCalendarViewScrollToNextDay {
     NSDate *newDate = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([self.selectDate timeIntervalSinceReferenceDate] + 24*3600)];
     self.selectDate = newDate;
     [self handlePreAndNextDate];
-    [self YCCalendarViewRefreshData];
+    [self YCCalendarViewRefreshDataHeightAdjust:self.heightAdjust];
 }
 
 - (void)YCCalendarViewScrollToToday {
@@ -237,18 +274,18 @@
 #pragma mark - ObserverContentOffset && ObserverFrame
 static void *SelfViewFrameSetObservationContext = &SelfViewFrameSetObservationContext;
 - (void)addObserverForSelfViewFrame {
-    [self.scrollView addObserver:self
-                      forKeyPath:@"frame"
-                         options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
-                         context:SelfViewFrameSetObservationContext];
+    [self addObserver:self
+           forKeyPath:@"frame"
+              options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+              context:SelfViewFrameSetObservationContext];
 }
 
 static void *ScrollViewContentOffsetObservationContext = &ScrollViewContentOffsetObservationContext;
 - (void)addObserverForScrollViewContentOffset {
-    [self.scrollView addObserver:self
-                      forKeyPath:@"contentOffset"
-                         options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
-                         context:ScrollViewContentOffsetObservationContext];
+    [self addObserver:self
+           forKeyPath:@"contentOffset"
+              options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+              context:ScrollViewContentOffsetObservationContext];
 }
 
 - (void)observeValueForKeyPath:(NSString*) path
@@ -262,9 +299,8 @@ static void *ScrollViewContentOffsetObservationContext = &ScrollViewContentOffse
     if (context == SelfViewFrameSetObservationContext && [path isEqual:@"frame"] && self.isInitial){
         NSString *newContentStr = [[change objectForKey:@"new"] description];
         CGRect newFrame = CGRectFromString(newContentStr);
-        self.scrollView.contentSize = CGSizeMake(newFrame.size.width * 3, 0);
-        [self.scrollView setContentOffset:CGPointMake(newFrame.size.width, 0) animated:NO];
-        self.frameSize = newFrame.size;
+        self.contentSize = CGSizeMake(newFrame.size.width * 3, 0);
+        [self setContentOffset:CGPointMake(newFrame.size.width, 0) animated:NO];
     }
     
     if (context == ScrollViewContentOffsetObservationContext && [path isEqual:@"contentOffset"]){
@@ -274,26 +310,26 @@ static void *ScrollViewContentOffsetObservationContext = &ScrollViewContentOffse
         UIScrollView *scrollView = (UIScrollView *)object;
         if (![newContentStr isEqualToString:oldContentStr] && self.isScrolling )
         {
-            CGFloat viewSize = self.scrollView.contentSize.width/CGRectGetWidth(self.scrollView.frame);
+            CGFloat viewSize = self.contentSize.width/CGRectGetWidth(self.frame);
             CGFloat x = self.curCalendarView.frame.origin.x;
             
             if (scrollView.contentOffset.x == x)
             {
                 self.isScrolling = NO;
                 if (self.hasPage) {
-                    [self YCCalendarViewRefreshData];
+                    [self YCCalendarViewRefreshDataHeightAdjust:self.heightAdjust];
                 }
                 self.hasPage = NO;
             }else{
                 if (scrollView.contentOffset.x == 0 ) {//上一页
                     [self changeCurDataToLast:YES];
                     self.hasPage = YES;
-                    [self.scrollView setContentOffset:CGPointMake(x, 0) animated:NO];
+                    [self setContentOffset:CGPointMake(x, 0) animated:NO];
                 }
-                else if(scrollView.contentOffset.x == (viewSize-1) * CGRectGetWidth(self.scrollView.frame)) {//下一页
+                else if(scrollView.contentOffset.x == (viewSize-1) * CGRectGetWidth(self.frame)) {//下一页
                     [self changeCurDataToLast:NO];
                     self.hasPage = YES;
-                    [self.scrollView setContentOffset:CGPointMake(x, 0) animated:NO];
+                    [self setContentOffset:CGPointMake(x, 0) animated:NO];
                 }
             }
         }
@@ -303,7 +339,7 @@ static void *ScrollViewContentOffsetObservationContext = &ScrollViewContentOffse
 #pragma mark - UIScrollViewDelegate
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    if (scrollView == self.scrollView && !self.isInitial) {
+    if (scrollView == self && !self.isInitial) {
         if (self.isScrolling) {
             return;
         }
