@@ -193,16 +193,14 @@
                 ChangeViewFrameHeight(wSelf, weekNum * DefaultCalendarWeekViewHeight);
                 [wSelf layoutIfNeeded];
             }else{
-                if (wSelf.calendarViewDelegate && [wSelf.calendarViewDelegate respondsToSelector:@selector(YCCalendarView:adjustFrameWithWeekNumber:)]) {
-                    [UIView performWithoutAnimation:^{
-                    }];
-                    [UIView animateWithDuration:0.25f delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^(){
-                        ChangeViewFrameHeight(wSelf, weekNum * DefaultCalendarWeekViewHeight);
-                        [wSelf layoutIfNeeded];
-                    } completion:^(BOOL finished){
-                        
-                    }];
+                [wSelf.layer removeAllAnimations];
+                [UIView animateWithDuration:0.25f delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^(){
+                    ChangeViewFrameHeight(wSelf, weekNum * DefaultCalendarWeekViewHeight);
+                    [wSelf layoutIfNeeded];
+                } completion:^(BOOL finished){
                     
+                }];
+                if (wSelf.calendarViewDelegate && [wSelf.calendarViewDelegate respondsToSelector:@selector(YCCalendarView:adjustFrameWithWeekNumber:)]) {
                     [wSelf.calendarViewDelegate YCCalendarView:wSelf adjustFrameWithWeekNumber:weekNum];
                 }
             }
